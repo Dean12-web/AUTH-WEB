@@ -2,6 +2,9 @@ const { error } = require('console');
 var express = require('express');
 var router = express.Router();
 var path = require('path');
+const { isLoggedIn } = require('../helpers/util');
+const bcrypt = require('bcrypt');
+const saltRounds = 10
 
 const data = [
   { nama: 'Gema', alamat: 'Cileunyi' },
@@ -11,23 +14,42 @@ const data = [
 
 module.exports = (pool) => {
   /* GET home page. */
+  router.get('/', isLoggedIn, (req, res) => {
+    res.render('index', { title: "Express", data, user: req.session.user })
+  })
+
   router.get('/login', (req, res) => {
-    res.render('login')
+    res.render('login', { info: req.flash('info') })
   })
 
   router.post('/login', async (req, res) => {
-    const { email, password} = req.body 
-    try{
-      const {rows} = await pool.query('SELECT * FROM users WHERE email = $1',[email])
+    const { email, password } = req.body
+    try {
+      const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [email])
       console.log(rows)
-      if(rows.length == 0) return res.send("users doesn't exits")
-      if(rows[0].passwod !== password) return res.send("password is wrong") 
+      if (rows.length == 0) {
+        req.flash('info', "users doesn't exits")
+        return res.redirect('/login')
+      }
+      if (!bcrypt.compareSync(password, rows[0].passwod)) {
+        req.flash('info', "password is wrong")
+        return res.redirect('/login')
+      }
+      req.session.user = rows[0]
+
       res.redirect('/')
-    }catch(e){
+    } catch (e) {
       res.send("Gagal Login")
     }
 
     res.render('login')
+  })
+
+  router.get('/logout', (req, res, next) => {
+    req.session.destroy(function (err) {
+      // cannot access session here
+      res.redirect('/login')
+    })
   })
 
   router.get('/register', (req, res) => {
@@ -37,28 +59,22 @@ module.exports = (pool) => {
   router.post('/register', async (req, res) => {
     const { email, password, repassword } = req.body
     // query binding bertujuan untuk menghindari sql injection eg. pakai $1,[email]
-    try{
+    try {
       console.log(email)
-      console.log(password,repassword)
-      if (password !== repassword) return res.send("Password doesn't Match")  
-      const {rows} = await pool.query('SELECT * FROM users WHERE email = $1',[email])
+      console.log(password, repassword)
+      if (password !== repassword) return res.send("Password doesn't Match")
+      const { rows } = await pool.query('SELECT * FROM users WHERE email = $1', [email])
       // console.log(rows)
-      if(rows.length > 0) return res.send('user is exist')
+      if (rows.length > 0) return res.send('user is exist')
 
-      await pool.query('INSERT INTO users VALUES($1,$2)',[email,password])
+      const hash = bcrypt.hashSync(password, saltRounds);
+      await pool.query('INSERT INTO users VALUES($1,$2)', [email, hash])
 
       res.redirect('/login')
-    }catch(e){
+    } catch (e) {
       res.send('gagal')
     }
   })
-
-  //CREATE TABLE users(email,password)
-
-  router.get('/', (req, res) => {
-    res.render('index', { title: "Express", data })
-  })
-
   router.get('/tambah', (req, res) => {
     res.render('add')
   })

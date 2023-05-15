@@ -152,6 +152,11 @@
             <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
             <p>Doesn't Have an Account? please <a href="/register">Sign up</a></p>
             <p class="mt-5 mb-3 text-body-secondary">© 2017–2023</p>
+            <% if (info.length > 0) { %>
+                <div class="alert alert-danger" role="alert">
+                    <%= info %>
+                </div>
+            <% } %>
         </form>
     </main>
 </body>
