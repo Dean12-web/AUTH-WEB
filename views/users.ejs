@@ -89,7 +89,7 @@
                     console.log("Success:", result);
                     const email = document.getElementById('email').value = ''
                     const password = document.getElementById('password').value = ''
-                    
+
                     readData()
                 } else {
                     throw new Error('Error: ' + response.status);
@@ -106,17 +106,42 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({email})
+                    body: JSON.stringify({ email })
                 });
 
                 if (response.ok) {
                     const result = await response.json();
                     // Handle the created data
                     console.log("Success:", result);
-                    const email = document.getElementById('email').value = ''
-                    const password = document.getElementById('password').value = ''
-                    
+
                     readData()
+                } else {
+                    throw new Error('Error: ' + response.status);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        async function updateData(email, password) {
+            try {
+                const data = {
+                    email: email,
+                    password: password
+                };
+                const response = await fetch(`http://localhost:3000/users/${email}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    // Handle the updated data
+                    console.log("Success:", result);
+                    // Perform any additional actions after the update
+                    readData();
                 } else {
                     throw new Error('Error: ' + response.status);
                 }
@@ -140,11 +165,12 @@
             });
             document.getElementById('user-body').innerHTML = html;
         }
-        document.getElementById('user-form').addEventListener("submit", function(event){ 
+
+        document.getElementById('user-form').addEventListener("submit", function (event) {
             event.preventDefault();
             const email = document.getElementById('email').value
             const password = document.getElementById('password').value
-            createData(email,password)
+            createData(email, password)
             // alert('Data Saved')
         });
         createData()

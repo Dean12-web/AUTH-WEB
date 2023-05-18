@@ -122,6 +122,9 @@ module.exports = (pool) => {
     res.render('users')
   })
 
+  router.get('/userjquery',(req,res)=>{
+    res.render('userjquery')
+  })
   return router
 }
 
