@@ -118,6 +118,10 @@ module.exports = (pool) => {
     });
   });
 
+  router.get('/daftaruser',(req,res)=>{
+    res.render('users')
+  })
+
   return router
 }
 

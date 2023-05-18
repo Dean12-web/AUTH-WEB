@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <title>Users</title>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header text-center">
+                <h1>Daftar users</h1>
+            </div>
+            <div class="card-body">
+                <form action="" id="user-form">
+                    <div class="row mb-3">
+                        <label for="email" class="col-sm-2 col-form-label">Email</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" name="email" id="email">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="password" class="col-sm-2 col-form-label">Password</label>
+                        <div class="col-sm-8">
+                            <input type="text" name="password" id="password" class="form-control">
+                        </div>
+                    </div>
+                    <br>
+                    <br>
+                    <button class="btn btn-primary" type="submit">Simpan</button>
+                </form>
+                <table class="table table-stripped">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Email</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-body">
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer text-center">
+                <h1>This is Footer</h1>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        async function readData() {
+            try {
+                const response = await fetch("http://localhost:3000/users");
+                if (response.ok) {
+                    const data = await response.json();
+                    // Display data
+                    displayData(data)
+
+                } else {
+                    throw new Error("Error: " + response.status);
+                }
+            } catch (error) {
+                console.log(error)
+            }
+        }
+
+        async function createData(email, password) {
+            try {
+                const data = {
+                    email: email,
+                    password: password
+                };
+
+                const response = await fetch("http://localhost:3000/users", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    // Handle the created data
+                    console.log("Success:", result);
+                    const email = document.getElementById('email').value = ''
+                    const password = document.getElementById('password').value = ''
+                    
+                    readData()
+                } else {
+                    throw new Error('Error: ' + response.status);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        async function deleteData(email) {
+            try {
+                const response = await fetch(`http://localhost:3000/users/${email}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({email})
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    // Handle the created data
+                    console.log("Success:", result);
+                    const email = document.getElementById('email').value = ''
+                    const password = document.getElementById('password').value = ''
+                    
+                    readData()
+                } else {
+                    throw new Error('Error: ' + response.status);
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        }
+
+        function displayData(data) {
+            let html = "";
+            data.data.forEach((item, index) => {
+                html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${item.email}</td>
+                    <td>
+                        <button class="btn btn-success">Edit</button>
+                        <button class="btn btn-danger" onClick = "deleteData('${item.email}')">Hapus</button>
+                    </td>
+                </tr>`
+            });
+            document.getElementById('user-body').innerHTML = html;
+        }
+        document.getElementById('user-form').addEventListener("submit", function(event){ 
+            event.preventDefault();
+            const email = document.getElementById('email').value
+            const password = document.getElementById('password').value
+            createData(email,password)
+            // alert('Data Saved')
+        });
+        createData()
+        readData()
+    </script>
+</body>
+
+</html>
