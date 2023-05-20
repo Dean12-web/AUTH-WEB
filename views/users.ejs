@@ -67,6 +67,21 @@
                 console.log(error)
             }
         }
+        function displayData(data) {
+            let html = "";
+            data.data.forEach((item, index) => {
+                html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${item.email}</td>
+                    <td>
+                        <button class="btn btn-success">Edit</button>
+                        <button class="btn btn-danger" onClick = "deleteData('${item.email}')">Hapus</button>
+                    </td>
+                </tr>`
+            });
+            document.getElementById('user-body').innerHTML = html;
+        }
 
         async function createData(email, password) {
             try {
@@ -89,7 +104,6 @@
                     console.log("Success:", result);
                     const email = document.getElementById('email').value = ''
                     const password = document.getElementById('password').value = ''
-
                     readData()
                 } else {
                     throw new Error('Error: ' + response.status);
@@ -113,7 +127,6 @@
                     const result = await response.json();
                     // Handle the created data
                     console.log("Success:", result);
-
                     readData()
                 } else {
                     throw new Error('Error: ' + response.status);
@@ -148,22 +161,6 @@
             } catch (error) {
                 console.log(error);
             }
-        }
-
-        function displayData(data) {
-            let html = "";
-            data.data.forEach((item, index) => {
-                html += `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td>${item.email}</td>
-                    <td>
-                        <button class="btn btn-success">Edit</button>
-                        <button class="btn btn-danger" onClick = "deleteData('${item.email}')">Hapus</button>
-                    </td>
-                </tr>`
-            });
-            document.getElementById('user-body').innerHTML = html;
         }
 
         document.getElementById('user-form').addEventListener("submit", function (event) {

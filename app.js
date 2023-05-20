@@ -6,6 +6,7 @@ var logger = require('morgan');
 const fileUpload = require('express-fileupload');
 var session = require('express-session')
 var flash = require('connect-flash');
+var MongoClient = require('mongodb').MongoClient;
 
 const { Pool } = require('pg')
 
@@ -17,9 +18,29 @@ const pool = new Pool({
   port: 5432
 });
 
+// MongoDB connection string
+const mongoURL = 'mongodb://localhost:27017/cobadb';
+async function connectToMongoDB() {
+  try {
+    const client = await MongoClient.connect(mongoURL, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log('Connected to MongoDB');
+    const db = client.db();
+
+    // Set the database object on the app.locals
+    app.locals.db = db;
+  } catch (error) {
+    console.error('Error connecting to MongoDB:', error);
+  }
+}
+
+connectToMongoDB();
 
 var indexRouter = require('./routes/index')(pool);// immediately call 
 var usersRouter = require('./routes/users')(pool);
+var dataRouter = require('./routes/data');
 
 var app = express();
 
@@ -43,6 +64,7 @@ app.use(fileUpload());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/data', dataRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
